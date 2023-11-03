@@ -4,7 +4,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { ControllerService } from './controller.service';
-import { Controller, Post } from '@nestjs/common';
+import { Controller, Get, Post } from '@nestjs/common';
 
 @Controller('/controller')
 @WebSocketGateway()
@@ -15,9 +15,15 @@ export class ControllerGateway {
     controllerService.onClock = this.clock;
   }
 
-  @Post('set-date')
+  @Post('date')
   setDate(@MessageBody() date: Date): void {
-    this.server.emit('clockStocks', this.controllerService.setDate(date));
+    this.controllerService.date = date;
+    this.server.emit('clockStocks', this.controllerService.date);
+  }
+
+  @Get('date')
+  getDate(): Date {
+    return this.controllerService.date;
   }
 
   @Post('start-clock')

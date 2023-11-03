@@ -1,4 +1,4 @@
-import { Injectable, LoggerService } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class ControllerService {
@@ -7,26 +7,31 @@ export class ControllerService {
   private static readonly CLOCK_TIMER = 1000;
 
   private clockTimeout?: NodeJS.Timeout;
-  private currentDate?: Date;
+  private currentDate: Date;
 
-  constructor(private readonly logger: LoggerService) {}
+  constructor() {
+    this.currentDate = this.roundDateToMidnight(new Date());
+  }
 
   roundDateToMidnight(date: Date): Date {
     return new Date(date.getFullYear(), date.getMonth(), date.getDate());
   }
 
-  setDate(date: Date): Date {
+  public set date(date: Date) {
     this.currentDate = this.roundDateToMidnight(date);
+  }
+
+  public get date(): Date {
     return this.currentDate;
   }
 
   startClock(): void {
     if (this.clockTimeout != null) {
-      this.logger.warn('Clock already started.');
+      console.warn('[Controller] Clock already started.');
       return;
     }
     if (this.currentDate == null) {
-      this.logger.warn('No date set for clock.');
+      console.warn('[Controller] No date set for clock.');
       return;
     }
 
@@ -37,7 +42,7 @@ export class ControllerService {
 
   stopClock(): void {
     if (this.clockTimeout == null) {
-      this.logger.warn('Clock not started.');
+      console.warn('[Controller] Clock not started.');
       return;
     }
 
