@@ -11,6 +11,11 @@ import { PatchStockDto } from './dto/patch-stock.dto';
 @Injectable()
 export class StocksService {
   private stocks: Map<number, Stock> = new Map();
+  private date?: Date;
+
+  updateDate(date: Date): void {
+    this.date = date;
+  }
 
   create(createStockDto: CreateStockDto): Observable<number> {
     const id = this.stocks.size + 1;
@@ -24,24 +29,24 @@ export class StocksService {
     return of(id);
   }
 
-  findAll(date: Date): Observable<FindStockDto> {
+  findAll(): Observable<FindStockDto> {
     return from(this.stocks).pipe(
       map(([, stock]) => {
-        if (stock.getPrice(date)) {
-          return { date: date, stockImprint: stock.getImprint(date) };
+        if (stock.getPrice(this.date)) {
+          return { date: this.date, stockImprint: stock.getImprint(this.date) };
         } else {
-          return { date: date, stockImprint: null };
+          return { date: this.date, stockImprint: null };
         }
       }),
     );
   }
 
-  findOne(id: number, date: Date): Observable<FindStockDto> {
+  findOne(id: number): Observable<FindStockDto> {
     const stock = this.stocks.get(id);
     if (stock) {
       return of({
-        date: date,
-        stockImprint: stock.getImprint(date),
+        date: this.date,
+        stockImprint: stock.getImprint(this.date),
       });
     } else {
       console.warn(`[StocksService] Stock with id ${id} not found.`);
@@ -54,7 +59,6 @@ export class StocksService {
 
   update(
     id: number,
-    date: Date,
     updateStockDto: CreateStockDto,
   ): Observable<StockImprint | null> {
     if (this.stocks.has(id)) {
@@ -62,7 +66,7 @@ export class StocksService {
       stock.name = updateStockDto.name;
       stock.prices = updateStockDto.prices;
       stock.quantity = updateStockDto.quantity;
-      return of(stock.getImprint(date));
+      return of(stock.getImprint(this.date));
     } else {
       console.warn(`[StocksService] Stock with id ${id} not found.`);
       return of(null);
@@ -71,7 +75,6 @@ export class StocksService {
 
   patch(
     id: number,
-    date: Date,
     patchStockDto: PatchStockDto,
   ): Observable<StockImprint | null> {
     if (this.stocks.has(id)) {
@@ -85,7 +88,7 @@ export class StocksService {
       if (patchStockDto.quantity != null) {
         stock.quantity = patchStockDto.quantity;
       }
-      return of(stock.getImprint(date));
+      return of(stock.getImprint(this.date));
     } else {
       console.warn(`[StocksService] Stock with id ${id} not found.`);
       return of(null);

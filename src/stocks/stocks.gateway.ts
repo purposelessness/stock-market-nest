@@ -7,7 +7,6 @@ import {
   Patch,
   Post,
   Put,
-  Query,
 } from '@nestjs/common';
 import {
   MessageBody,
@@ -34,21 +33,19 @@ export class StocksGateway {
   }
 
   @Get()
-  findAll(@Query('date') date: Date): Observable<FindStockDto> {
-    return this.stocksService.findAll(date);
+  findAll(): Observable<FindStockDto> {
+    return this.stocksService.findAll();
   }
 
   @Get(':id')
-  findOne(
-    @Param('id') id: number,
-    @Query('date') date: Date,
-  ): Observable<FindStockDto> {
-    return this.stocksService.findOne(id, date);
+  findOne(@Param('id') id: number): Observable<FindStockDto> {
+    return this.stocksService.findOne(id);
   }
 
   @SubscribeMessage('clockStocks')
   clockStocks(@MessageBody() date: Date): Observable<WsResponse<FindStockDto>> {
-    return this.stocksService.findAll(date).pipe(
+    this.stocksService.updateDate(date);
+    return this.stocksService.findAll().pipe(
       map((findStockDto: FindStockDto) => {
         return {
           event: 'updateStock',
@@ -61,10 +58,9 @@ export class StocksGateway {
   @Put(':id')
   update(
     @Param('id') id: number,
-    @Query('date') date: Date,
     @Body() updateStockDto: CreateStockDto,
   ): Observable<WsResponse<StockImprint>> {
-    return this.stocksService.update(id, date, updateStockDto).pipe(
+    return this.stocksService.update(id, updateStockDto).pipe(
       map((stockImprint: StockImprint) => {
         return {
           event: 'updateStock',
@@ -77,10 +73,9 @@ export class StocksGateway {
   @Patch(':id')
   patch(
     @Param('id') id: number,
-    @Query('date') date: Date,
     @Body() patchStockDto: CreateStockDto,
   ): Observable<WsResponse<StockImprint>> {
-    return this.stocksService.patch(id, date, patchStockDto).pipe(
+    return this.stocksService.patch(id, patchStockDto).pipe(
       map((stockImprint: StockImprint) => {
         return {
           event: 'updateStock',
