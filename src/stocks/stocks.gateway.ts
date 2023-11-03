@@ -7,11 +7,13 @@ import {
   Patch,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
 import {
   MessageBody,
   SubscribeMessage,
   WebSocketGateway,
+  WebSocketServer,
   WsResponse,
 } from '@nestjs/websockets';
 
@@ -25,6 +27,8 @@ import { StockImprint } from './entities/stock-imprint.entity';
 @Controller('/stocks')
 @WebSocketGateway()
 export class StocksGateway {
+  @WebSocketServer() server: any;
+
   constructor(private readonly stocksService: StocksService) {}
 
   @Post()
@@ -88,5 +92,18 @@ export class StocksGateway {
   @Delete(':id')
   remove(@Param('id') id: number): Observable<number> {
     return this.stocksService.remove(id);
+  }
+
+  @Post('buy/:id')
+  buy(
+    @Param('id') id: number,
+    @Query('quantity') quantity: number,
+  ): Observable<number> {
+    return this.stocksService.buy(id, quantity).pipe(
+      map(({ price, stockImprint }) => {
+        this.server.emit('updateStock', stockImprint);
+        return price;
+      }),
+    );
   }
 }

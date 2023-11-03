@@ -99,4 +99,23 @@ export class StocksService {
     this.stocks.delete(id);
     return of(id);
   }
+
+  buy(
+    id: number,
+    quantity: number,
+  ): Observable<{ price: number; stockImprint: StockImprint } | null> {
+    if (this.stocks.has(id)) {
+      const stock = this.stocks.get(id);
+      stock.quantity -= quantity;
+      if (stock.quantity < 0) {
+        quantity += stock.quantity;
+        stock.quantity = 0;
+      }
+      const imprint = stock.getImprint(this.date);
+      return of({ price: quantity * imprint.price, stockImprint: imprint });
+    } else {
+      console.warn(`[StocksService] Stock with id ${id} not found.`);
+      return of(null);
+    }
+  }
 }
