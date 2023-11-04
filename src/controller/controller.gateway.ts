@@ -1,24 +1,63 @@
+import { Controller, Get, Logger, Post } from '@nestjs/common';
 import {
   WebSocketGateway,
   MessageBody,
   WebSocketServer,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  SubscribeMessage,
+  OnGatewayInit,
 } from '@nestjs/websockets';
+
+import { Server } from 'socket.io';
+import { io } from 'socket.io-client';
+
 import { ControllerService } from './controller.service';
-import { Controller, Get, Post } from '@nestjs/common';
+import { STOCKS_SOCKET_URI } from '../consts';
 
 @Controller('/controller')
-@WebSocketGateway()
-export class ControllerGateway {
-  @WebSocketServer() server: any;
+@WebSocketGateway({
+  namespace: '/controller',
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'PUT'],
+  },
+})
+export class ControllerGateway
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
+{
+  @WebSocketServer() server: Server;
+
+  private readonly logger: Logger = new Logger(ControllerGateway.name);
+
+  private readonly stocksIo = io(STOCKS_SOCKET_URI);
 
   constructor(private readonly controllerService: ControllerService) {
     controllerService.onClock = this.clock;
   }
 
-  @Post('date')
-  setDate(@MessageBody() date: Date): void {
-    this.controllerService.date = date;
-    this.server.emit('clockStocks', this.controllerService.date);
+  public afterInit(): any {
+    this.stocksIo.on('connect', () => {
+      this.logger.debug('Connected to stocks');
+    });
+    this.logger.debug('Initialized');
+  }
+
+  public handleConnection(client: any): any {
+    this.logger.debug(`Client connected: ${client.id}`);
+  }
+
+  public handleDisconnect(client: any): any {
+    this.logger.debug(`Client disconnected: ${client.id}`);
+  }
+
+  @SubscribeMessage('setDate')
+  setDate(@MessageBody('date') date: string): void {
+    this.logger.debug(`Date set: ${date}`);
+    this.controllerService.date = new Date(date);
+    this.stocksIo.emit('clockStocks', {
+      date: this.controllerService.date,
+    });
   }
 
   @Get('date')
@@ -37,6 +76,8 @@ export class ControllerGateway {
   }
 
   private clock = (date: Date): void => {
-    this.server.emit('clockStocks', date);
+    this.stocksIo.emit('clockStocks', {
+      date: date,
+    });
   };
 }

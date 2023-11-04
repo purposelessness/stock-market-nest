@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Logger,
   Param,
   Patch,
   Post,
@@ -11,6 +12,8 @@ import {
 } from '@nestjs/common';
 import {
   MessageBody,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
@@ -18,6 +21,7 @@ import {
 } from '@nestjs/websockets';
 
 import { map, Observable } from 'rxjs';
+import { Server } from 'socket.io';
 
 import { StocksService } from './stocks.service';
 import { CreateStockDto } from './dto/create-stock.dto';
@@ -25,11 +29,27 @@ import { FindStockDto } from './dto/find-all.dto';
 import { StockImprint } from './entities/stock-imprint.entity';
 
 @Controller('/stocks')
-@WebSocketGateway()
-export class StocksGateway {
-  @WebSocketServer() server: any;
+@WebSocketGateway({
+  namespace: '/stocks',
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'PUT'],
+  },
+})
+export class StocksGateway implements OnGatewayConnection, OnGatewayDisconnect {
+  @WebSocketServer() server: Server;
+
+  private readonly logger: Logger = new Logger(StocksGateway.name);
 
   constructor(private readonly stocksService: StocksService) {}
+
+  public handleConnection(client: any): any {
+    this.logger.debug(`Client connected: ${client.id}`);
+  }
+
+  public handleDisconnect(client: any): any {
+    this.logger.debug(`Client disconnected: ${client.id}`);
+  }
 
   @Post()
   create(@Body() createStockDto: CreateStockDto): Observable<number> {
@@ -47,7 +67,9 @@ export class StocksGateway {
   }
 
   @SubscribeMessage('clockStocks')
-  clockStocks(@MessageBody() date: Date): Observable<WsResponse<FindStockDto>> {
+  clockStocks(
+    @MessageBody('date') date: Date,
+  ): Observable<WsResponse<FindStockDto>> {
     this.stocksService.updateDate(date);
     return this.stocksService.findAll().pipe(
       map((findStockDto: FindStockDto) => {
