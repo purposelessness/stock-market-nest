@@ -1,6 +1,6 @@
 import { StockImprint } from '../entities/stock-imprint.entity';
 
-export class FindStockDto {
+export class FindStockImprintDto {
   constructor(
     public readonly date: Date,
     public readonly stockImprint: StockImprint | null,

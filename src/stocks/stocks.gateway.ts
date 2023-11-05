@@ -25,8 +25,9 @@ import { Server } from 'socket.io';
 
 import { StocksService } from './stocks.service';
 import { CreateStockDto } from './dto/create-stock.dto';
-import { FindStockDto } from './dto/find-all.dto';
+import { FindStockImprintDto } from './dto/find-all.dto';
 import { StockImprint } from './entities/stock-imprint.entity';
+import { FindStockDto } from './dto/find-all-detailed.dto';
 
 @Controller('/stocks')
 @WebSocketGateway({
@@ -51,28 +52,33 @@ export class StocksGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.logger.debug(`Client disconnected: ${client.id}`);
   }
 
+  @Get('details')
+  findAllDetailed(): Observable<FindStockDto> {
+    return this.stocksService.findAllDetailed();
+  }
+
   @Post()
   create(@Body() createStockDto: CreateStockDto): Observable<number> {
     return this.stocksService.create(createStockDto);
   }
 
   @Get()
-  findAll(): Observable<FindStockDto> {
+  findAll(): Observable<FindStockImprintDto> {
     return this.stocksService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: number): Observable<FindStockDto> {
+  findOne(@Param('id') id: number): Observable<FindStockImprintDto> {
     return this.stocksService.findOne(id);
   }
 
   @SubscribeMessage('clockStocks')
   clockStocks(
     @MessageBody('date') date: Date,
-  ): Observable<WsResponse<FindStockDto>> {
+  ): Observable<WsResponse<FindStockImprintDto>> {
     this.stocksService.updateDate(date);
     return this.stocksService.findAll().pipe(
-      map((findStockDto: FindStockDto) => {
+      map((findStockDto: FindStockImprintDto) => {
         return {
           event: 'updateStock',
           data: findStockDto,

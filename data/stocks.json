@@ -1,0 +1,8 @@
+[
+  {
+    "id": 0,
+    "name": "AAPL",
+    "quantity": 10,
+    "prices": "aapl.csv"
+  }
+]
