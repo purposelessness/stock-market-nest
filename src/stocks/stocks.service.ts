@@ -37,10 +37,16 @@ export class StocksService implements OnModuleInit {
   findAllDetailed(): Observable<FindStockDto> {
     return from(this.stocks).pipe(
       map(([, stock]) => {
+        const priceData: { date: string; price: number }[] = [];
+        for (const [date, price] of stock.prices) {
+          const dateStr = date.toISOString().split('T')[0];
+          priceData.push({ date: dateStr, price: price });
+        }
+        priceData.sort((a, b) => (a.date < b.date ? -1 : 1));
         return {
           id: stock.id,
           name: stock.name,
-          prices: stock.prices,
+          prices: priceData,
           quantity: stock.quantity,
         };
       }),
