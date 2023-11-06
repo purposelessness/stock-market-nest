@@ -5,17 +5,17 @@ export class Stock {
   constructor(
     public readonly id: number,
     public name: string,
-    public prices: Map<Date, number>,
+    public prices: Map<string, number>,
     public quantity: number,
   ) {}
 
   // Returns price of this stock on given date.
-  getPrice(date: Date): number {
+  getPrice(date: string): number {
     return this.prices.get(date);
   }
 
   // Returns imprint of this stock.
-  getImprint(date: Date): StockImprint {
+  getImprint(date: string): StockImprint {
     return new StockImprint(
       this.id,
       this.name,

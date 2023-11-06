@@ -20,7 +20,7 @@ import {
   WsResponse,
 } from '@nestjs/websockets';
 
-import { map, Observable } from 'rxjs';
+import { map, Observable, of } from 'rxjs';
 import { Server } from 'socket.io';
 
 import { StocksService } from './stocks.service';
@@ -53,7 +53,7 @@ export class StocksGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @Get('details')
-  findAllDetailed(): Observable<FindStockDto> {
+  findAllDetailed(): Observable<FindStockDto[]> {
     return this.stocksService.findAllDetailed();
   }
 
@@ -63,8 +63,8 @@ export class StocksGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @Get()
-  findAll(): Observable<FindStockImprintDto> {
-    return this.stocksService.findAll();
+  findAll(): Observable<FindStockImprintDto[]> {
+    return of(this.stocksService.findAll());
   }
 
   @Get(':id')
@@ -73,18 +73,14 @@ export class StocksGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('clockStocks')
-  clockStocks(
-    @MessageBody('date') date: Date,
-  ): Observable<WsResponse<FindStockImprintDto>> {
+  clockStocks(@MessageBody('date') date: Date): Observable<void> {
     this.stocksService.updateDate(date);
-    return this.stocksService.findAll().pipe(
-      map((findStockDto: FindStockImprintDto) => {
-        return {
-          event: 'updateStock',
-          data: findStockDto,
-        };
-      }),
-    );
+    return new Observable<void>((observer) => {
+      this.stocksService.findAll().forEach((stockImprint) => {
+        this.server.emit('updateStock', stockImprint);
+        observer.next();
+      });
+    });
   }
 
   @Put(':id')

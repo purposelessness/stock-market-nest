@@ -4,7 +4,7 @@ import * as path from 'path';
 
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 
-import { from, map, Observable, of } from 'rxjs';
+import { Observable, of } from 'rxjs';
 
 import { __data_dir } from '../consts';
 import { CreateStockDto } from './dto/create-stock.dto';
@@ -24,29 +24,25 @@ export class StocksService implements OnModuleInit {
   private readonly logger: Logger = new Logger(StocksService.name);
 
   private stocks: Map<number, Stock> = new Map();
-  private date?: Date;
+  private date?: string;
 
   onModuleInit(): void {
     this.loadStocks();
   }
 
   updateDate(date: Date): void {
-    this.date = date;
+    this.date = new Date(date).toISOString().split('T')[0];
   }
 
-  findAllDetailed(): Observable<FindStockDto> {
-    return from(this.stocks).pipe(
-      map(([, stock]) => {
-        const priceData: { date: string; price: number }[] = [];
-        for (const [date, price] of stock.prices) {
-          const dateStr = date.toISOString().split('T')[0];
-          priceData.push({ date: dateStr, price: price });
-        }
-        priceData.sort((a, b) => (a.date < b.date ? -1 : 1));
+  findAllDetailed(): Observable<FindStockDto[]> {
+    return of(
+      Array.from(this.stocks.values()).map((stock) => {
         return {
           id: stock.id,
           name: stock.name,
-          prices: priceData,
+          prices: Array.from(stock.prices.entries()).map(([date, price]) => {
+            return { date: date, price: price };
+          }),
           quantity: stock.quantity,
         };
       }),
@@ -65,16 +61,14 @@ export class StocksService implements OnModuleInit {
     return of(id);
   }
 
-  findAll(): Observable<FindStockImprintDto> {
-    return from(this.stocks).pipe(
-      map(([, stock]) => {
-        if (stock.getPrice(this.date)) {
-          return { date: this.date, stockImprint: stock.getImprint(this.date) };
-        } else {
-          return { date: this.date, stockImprint: null };
-        }
-      }),
-    );
+  findAll(): FindStockImprintDto[] {
+    return Array.from(this.stocks.values()).map((stock) => {
+      if (stock.prices.has(this.date)) {
+        return { date: this.date, stockImprint: stock.getImprint(this.date) };
+      } else {
+        return { date: this.date, stockImprint: null };
+      }
+    });
   }
 
   findOne(id: number): Observable<FindStockImprintDto> {
@@ -87,7 +81,7 @@ export class StocksService implements OnModuleInit {
     } else {
       this.logger.warn(`Stock with id ${id} not found.`);
       return of({
-        date: new Date(),
+        date: new Date().toISOString().split('T')[0],
         stockImprint: null,
       });
     }
@@ -165,13 +159,13 @@ export class StocksService implements OnModuleInit {
 
     const streams = [];
     for (const stock of stocks) {
-      const parsedPrices: Map<Date, number> = new Map();
+      const parsedPrices: Map<string, number> = new Map();
       streams.push(
         fs
           .createReadStream(path.join(__data_dir, stock.prices))
           .pipe(csv())
           .on('data', (data) => {
-            const date = new Date(data['Date']);
+            const date = new Date(data['Date']).toISOString().split('T')[0];
             const openPrice = Number((data['Open'] as string).split('$')[1]);
             parsedPrices.set(date, openPrice);
           })

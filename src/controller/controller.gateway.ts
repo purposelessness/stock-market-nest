@@ -52,7 +52,7 @@ export class ControllerGateway
   }
 
   @SubscribeMessage('setDate')
-  setDate(@MessageBody('date') date: string): void {
+  setDate(@MessageBody() date: string): void {
     this.logger.debug(`Date set: ${date}`);
     this.controllerService.date = new Date(date);
     this.stocksIo.emit('clockStocks', {

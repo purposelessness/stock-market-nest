@@ -56,7 +56,7 @@ export class ControllerService {
     this.currentDate = new Date(
       this.currentDate.getTime() + 24 * 60 * 60 * 1000,
     );
-    this.logger.debug(`[Controller] Clock ticked: ${this.currentDate}.`);
+    // this.logger.debug(`Clock ticked: ${this.currentDate}.`);
     if (this.onClock) {
       this.onClock(this.currentDate);
     }
