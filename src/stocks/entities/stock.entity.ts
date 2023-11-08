@@ -7,6 +7,7 @@ export class Stock {
     public name: string,
     public prices: Map<string, number>,
     public quantity: number,
+    public enabled: boolean = true,
   ) {}
 
   // Returns price of this stock on given date.
@@ -21,6 +22,7 @@ export class Stock {
       this.name,
       this.getPrice(date),
       this.quantity,
+      this.enabled,
     );
   }
 }

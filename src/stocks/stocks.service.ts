@@ -24,7 +24,7 @@ export class StocksService implements OnModuleInit {
   private readonly logger: Logger = new Logger(StocksService.name);
 
   private stocks: Map<number, Stock> = new Map();
-  private date?: string;
+  date?: string;
 
   onModuleInit(): void {
     this.loadStocks();
@@ -44,6 +44,7 @@ export class StocksService implements OnModuleInit {
             return { date: date, price: price };
           }),
           quantity: stock.quantity,
+          enabled: stock.enabled,
         };
       }),
     );
@@ -136,6 +137,10 @@ export class StocksService implements OnModuleInit {
   ): Observable<{ price: number; stockImprint: StockImprint } | null> {
     if (this.stocks.has(id)) {
       const stock = this.stocks.get(id);
+      if (!stock.enabled) {
+        this.logger.warn(`Stock with id ${id} is disabled.`);
+        return of(null);
+      }
       stock.quantity -= quantity;
       if (stock.quantity < 0) {
         quantity += stock.quantity;
@@ -143,6 +148,28 @@ export class StocksService implements OnModuleInit {
       }
       const imprint = stock.getImprint(this.date);
       return of({ price: quantity * imprint.price, stockImprint: imprint });
+    } else {
+      this.logger.warn(`Stock with id ${id} not found.`);
+      return of(null);
+    }
+  }
+
+  activate(id: number): Observable<StockImprint | null> {
+    if (this.stocks.has(id)) {
+      const stock = this.stocks.get(id);
+      stock.enabled = true;
+      return of(stock.getImprint(this.date));
+    } else {
+      this.logger.warn(`Stock with id ${id} not found.`);
+      return of(null);
+    }
+  }
+
+  deactivate(id: number): Observable<StockImprint | null> {
+    if (this.stocks.has(id)) {
+      const stock = this.stocks.get(id);
+      stock.enabled = false;
+      return of(stock.getImprint(this.date));
     } else {
       this.logger.warn(`Stock with id ${id} not found.`);
       return of(null);

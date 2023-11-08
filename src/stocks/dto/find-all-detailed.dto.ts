@@ -3,4 +3,5 @@ export class FindStockDto {
   public readonly name: string;
   public readonly prices: { date: string; price: number }[];
   public readonly quantity: number;
+  public readonly enabled: boolean;
 }

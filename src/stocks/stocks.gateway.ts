@@ -130,4 +130,28 @@ export class StocksGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }),
     );
   }
+
+  @SubscribeMessage('activateStock')
+  activate(@MessageBody('id') id: number): Observable<void> {
+    return this.stocksService.activate(id).pipe(
+      map((stockImprint: StockImprint) => {
+        this.server.emit('updateStock', {
+          date: this.stocksService.date,
+          stockImprint: stockImprint,
+        });
+      }),
+    );
+  }
+
+  @SubscribeMessage('deactivateStock')
+  deactivate(@MessageBody('id') id: number): Observable<void> {
+    return this.stocksService.deactivate(id).pipe(
+      map((stockImprint: StockImprint) => {
+        this.server.emit('updateStock', {
+          date: this.stocksService.date,
+          stockImprint: stockImprint,
+        });
+      }),
+    );
+  }
 }
