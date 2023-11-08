@@ -4,12 +4,11 @@ import { Injectable, Logger } from '@nestjs/common';
 export class ControllerService {
   public onClock?: (date: Date) => void;
 
-  private static readonly CLOCK_TIMER = 1000;
-
   private readonly logger = new Logger(ControllerService.name);
 
   private clockTimeout?: NodeJS.Timeout;
   private currentDate: Date;
+  private delay = 1000;
 
   constructor() {
     this.currentDate = this.roundDateToMidnight(new Date());
@@ -39,7 +38,16 @@ export class ControllerService {
 
     this.clockTimeout = setInterval(() => {
       this.clock();
-    }, ControllerService.CLOCK_TIMER);
+    }, this.delay);
+  }
+
+  setClockSpeed(delay: number): void {
+    this.delay = delay;
+    console.log(`[Controller] Clock speed set to ${delay}ms.`);
+    if (this.clockTimeout != null) {
+      this.stopClock();
+      this.startClock();
+    }
   }
 
   stopClock(): void {

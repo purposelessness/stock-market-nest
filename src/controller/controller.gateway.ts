@@ -75,6 +75,11 @@ export class ControllerGateway
     this.controllerService.stopClock();
   }
 
+  @Post('set-clock-delay')
+  setClockSpeed(@MessageBody('delay') delay: number) {
+    this.controllerService.setClockSpeed(delay);
+  }
+
   private clock = (date: Date): void => {
     this.stocksIo.emit('clockStocks', {
       date: date,
