@@ -20,7 +20,7 @@ export class Stock {
     return new StockImprint(
       this.id,
       this.name,
-      this.getPrice(date),
+      this.prices.has(date) ? this.prices.get(date) : undefined,
       this.quantity,
       this.enabled,
     );

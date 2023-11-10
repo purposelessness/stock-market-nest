@@ -64,11 +64,7 @@ export class StocksService implements OnModuleInit {
 
   findAll(): FindStockImprintDto[] {
     return Array.from(this.stocks.values()).map((stock) => {
-      if (stock.prices.has(this.date)) {
-        return { date: this.date, stockImprint: stock.getImprint(this.date) };
-      } else {
-        return { date: this.date, stockImprint: null };
-      }
+      return { date: this.date, stockImprint: stock.getImprint(this.date) };
     });
   }
 
