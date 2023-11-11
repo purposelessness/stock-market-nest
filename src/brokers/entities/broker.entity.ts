@@ -18,21 +18,26 @@ export class Broker {
     this.money -= price * quantity;
   }
 
+  getActiveQuantity(stockId: number): number {
+    const actives = this.actives.get(stockId);
+    if (!actives) {
+      return 0;
+    }
+    return actives.reduce((acc, active) => acc + active.quantity, 0);
+  }
+
   sell(stockId: number, quantity: number, price: number) {
     const actives = this.actives.get(stockId);
-    this.money += quantity * price;
     for (let i = 0; i < actives.length; i++) {
-      if (actives[i].quantity < quantity) {
-        quantity -= actives[i].quantity;
-        actives.splice(i, 1);
-      } else {
-        actives[i].quantity -= quantity;
-        if (actives[i].quantity === 0) {
-          actives.splice(i, 1);
-        }
+      const active = actives[i];
+      if (active.quantity >= quantity) {
+        active.quantity -= quantity;
         break;
       }
+      quantity -= active.quantity;
+      actives.splice(i, 1);
     }
+    this.money += price * quantity;
   }
 
   toJson(): any {

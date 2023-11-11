@@ -99,11 +99,12 @@ export class BrokersGateway {
     @MessageBody('quantity') quantity: number,
   ) {
     const broker = this.brokersService.findOne(brokerId);
+    const activeQuantity = broker.getActiveQuantity(stockId);
     this.stockIo.emit(
       'sell',
       {
         id: stockId,
-        quantity: quantity,
+        quantity: Math.min(activeQuantity, quantity),
       },
       (response: any | null) => {
         if (response === null) {

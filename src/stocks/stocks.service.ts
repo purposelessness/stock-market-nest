@@ -134,6 +134,12 @@ export class StocksService implements OnModuleInit {
         this.logger.warn(`Stock with id ${id} is disabled.`);
         return null;
       }
+      if (stock.prices.get(this.date) === undefined) {
+        this.logger.warn(
+          `Stock with id ${id} is not available on ${this.date}.`,
+        );
+        return null;
+      }
       stock.quantity -= quantity;
       if (stock.quantity < 0) {
         quantity += stock.quantity;
@@ -156,6 +162,12 @@ export class StocksService implements OnModuleInit {
       const stock = this.stocks.get(id);
       if (!stock.enabled) {
         this.logger.warn(`Stock with id ${id} is disabled.`);
+        return null;
+      }
+      if (stock.prices.get(this.date) === undefined) {
+        this.logger.warn(
+          `Stock with id ${id} is not available on ${this.date}.`,
+        );
         return null;
       }
       stock.quantity += quantity;
