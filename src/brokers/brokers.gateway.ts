@@ -10,7 +10,6 @@ import { CreateBrokerDto } from './dto/create-broker.dto';
 import { UpdateBrokerDto } from './dto/update-broker.dto';
 import { Server } from 'socket.io';
 import { Logger } from '@nestjs/common';
-import { Broker } from './entities/broker.entity';
 import { io } from 'socket.io-client';
 
 @WebSocketGateway({
@@ -20,7 +19,7 @@ import { io } from 'socket.io-client';
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'PUT'],
   },
 })
-export class BrokersGateway implements OnGatewayInit {
+export class BrokersGateway {
   @WebSocketServer() server: Server;
 
   private readonly stockIo = io('http://localhost:3000/stocks');
@@ -29,21 +28,9 @@ export class BrokersGateway implements OnGatewayInit {
 
   constructor(private readonly brokersService: BrokersService) {}
 
-  afterInit() {
-    this.stockIo.on('updateStock', () => {
-      this.updateBrokers();
-    });
-  }
-
   private send(event: string, message: any) {
     this.server.emit(event, message);
     return message;
-  }
-
-  private updateBrokers() {
-    this.brokersService.findAll().forEach((broker) => {
-      this.send('updated', broker.toJson());
-    });
   }
 
   @SubscribeMessage('create')

@@ -67,6 +67,14 @@ export class StocksGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return of(this.stocksService.findAll());
   }
 
+  @SubscribeMessage('findAll')
+  findAllSocket() {
+    this.stocksService.findAll().forEach((stockImprint) => {
+      this.server.emit('updateStock', stockImprint);
+      console.log(stockImprint);
+    });
+  }
+
   @Get(':id')
   findOne(@Param('id') id: number): Observable<FindStockImprintDto> {
     return this.stocksService.findOne(id);
