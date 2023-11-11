@@ -71,7 +71,6 @@ export class StocksGateway implements OnGatewayConnection, OnGatewayDisconnect {
   findAllSocket() {
     this.stocksService.findAll().forEach((stockImprint) => {
       this.server.emit('updateStock', stockImprint);
-      console.log(stockImprint);
     });
   }
 
@@ -136,7 +135,10 @@ export class StocksGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return null;
     }
 
-    this.server.emit('updateStock', res.stockImprint);
+    this.server.emit('updateStock', {
+      date: this.stocksService.date,
+      stockImprint: res.stockImprint,
+    });
     return res;
   }
 
@@ -150,7 +152,10 @@ export class StocksGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return null;
     }
 
-    this.server.emit('updateStock', res.stockImprint);
+    this.server.emit('updateStock', {
+      date: this.stocksService.date,
+      stockImprint: res.stockImprint,
+    });
     return res;
   }
 

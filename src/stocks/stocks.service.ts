@@ -142,7 +142,7 @@ export class StocksService implements OnModuleInit {
       const imprint = stock.getImprint(this.date);
       return {
         quantity: quantity,
-        price: quantity * imprint.price,
+        price: imprint.price,
         stockImprint: imprint,
       };
     } else {
@@ -162,7 +162,7 @@ export class StocksService implements OnModuleInit {
       const imprint = stock.getImprint(this.date);
       return {
         quantity: quantity,
-        price: quantity * imprint.price,
+        price: imprint.price,
         stockImprint: imprint,
       };
     } else {

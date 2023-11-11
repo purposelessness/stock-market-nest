@@ -14,8 +14,8 @@ export class Broker {
     }
 
     const actives = this.actives.get(stockId);
-    actives.push(new Active(stockId, name, quantity, price));
-    this.money -= quantity * price;
+    actives.push(new Active(stockId, name, price, quantity));
+    this.money -= price * quantity;
   }
 
   sell(stockId: number, quantity: number, price: number) {
@@ -27,6 +27,9 @@ export class Broker {
         actives.splice(i, 1);
       } else {
         actives[i].quantity -= quantity;
+        if (actives[i].quantity === 0) {
+          actives.splice(i, 1);
+        }
         break;
       }
     }

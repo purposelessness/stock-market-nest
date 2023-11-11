@@ -36,7 +36,7 @@ export class BrokersGateway {
   @SubscribeMessage('create')
   create(@MessageBody() createBrokerDto: CreateBrokerDto) {
     const res = this.brokersService.create(createBrokerDto);
-    return this.send('created', res);
+    return this.send('updated', res);
   }
 
   @SubscribeMessage('findAll')
@@ -51,7 +51,8 @@ export class BrokersGateway {
 
   @SubscribeMessage('findByLogin')
   findByLogin(@MessageBody() login: string) {
-    return this.brokersService.findByLogin(login).toJson();
+    const res = this.brokersService.findByLogin(login);
+    return res ? res.toJson() : {};
   }
 
   @SubscribeMessage('update')

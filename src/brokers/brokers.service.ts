@@ -17,8 +17,9 @@ export class BrokersService implements OnModuleInit {
 
   create(createBrokerDto: CreateBrokerDto) {
     const id = this.brokers.size;
-    this.brokers.set(id, new Broker(id, createBrokerDto.login, 0));
-    return id;
+    const broker = new Broker(id, createBrokerDto.login, 0);
+    this.brokers.set(id, broker);
+    return broker;
   }
 
   onModuleInit() {
@@ -34,7 +35,10 @@ export class BrokersService implements OnModuleInit {
   }
 
   findByLogin(login: string): Broker {
-    return [...this.brokers.values()].find((broker) => broker.login === login);
+    return [...this.brokers.values()].find((broker) => {
+      console.log(broker.login, login);
+      return broker.login === login;
+    });
   }
 
   update(id: number, updateBrokerDto: UpdateBrokerDto) {
