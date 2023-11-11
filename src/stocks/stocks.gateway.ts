@@ -118,17 +118,32 @@ export class StocksGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return this.stocksService.remove(id);
   }
 
-  @Post('buy/:id')
+  @SubscribeMessage('buy')
   buy(
-    @Param('id') id: number,
-    @Query('quantity') quantity: number,
-  ): Observable<number> {
-    return this.stocksService.buy(id, quantity).pipe(
-      map(({ price, stockImprint }) => {
-        this.server.emit('updateStock', stockImprint);
-        return price;
-      }),
-    );
+    @MessageBody('id') id: number,
+    @MessageBody('quantity') quantity: number,
+  ) {
+    const res = this.stocksService.buy(id, quantity);
+    if (res === null) {
+      return null;
+    }
+
+    this.server.emit('updateStock', res.stockImprint);
+    return res;
+  }
+
+  @SubscribeMessage('sell')
+  sell(
+    @MessageBody('id') id: number,
+    @MessageBody('quantity') quantity: number,
+  ) {
+    const res = this.stocksService.sell(id, quantity);
+    if (res === null) {
+      return null;
+    }
+
+    this.server.emit('updateStock', res.stockImprint);
+    return res;
   }
 
   @SubscribeMessage('activateStock')

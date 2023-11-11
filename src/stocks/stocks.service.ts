@@ -127,15 +127,12 @@ export class StocksService implements OnModuleInit {
     return of(id);
   }
 
-  buy(
-    id: number,
-    quantity: number,
-  ): Observable<{ price: number; stockImprint: StockImprint } | null> {
+  buy(id: number, quantity: number) {
     if (this.stocks.has(id)) {
       const stock = this.stocks.get(id);
       if (!stock.enabled) {
         this.logger.warn(`Stock with id ${id} is disabled.`);
-        return of(null);
+        return null;
       }
       stock.quantity -= quantity;
       if (stock.quantity < 0) {
@@ -143,10 +140,34 @@ export class StocksService implements OnModuleInit {
         stock.quantity = 0;
       }
       const imprint = stock.getImprint(this.date);
-      return of({ price: quantity * imprint.price, stockImprint: imprint });
+      return {
+        quantity: quantity,
+        price: quantity * imprint.price,
+        stockImprint: imprint,
+      };
     } else {
       this.logger.warn(`Stock with id ${id} not found.`);
-      return of(null);
+      return null;
+    }
+  }
+
+  sell(id: number, quantity: number) {
+    if (this.stocks.has(id)) {
+      const stock = this.stocks.get(id);
+      if (!stock.enabled) {
+        this.logger.warn(`Stock with id ${id} is disabled.`);
+        return null;
+      }
+      stock.quantity += quantity;
+      const imprint = stock.getImprint(this.date);
+      return {
+        quantity: quantity,
+        price: quantity * imprint.price,
+        stockImprint: imprint,
+      };
+    } else {
+      this.logger.warn(`Stock with id ${id} not found.`);
+      return null;
     }
   }
 
