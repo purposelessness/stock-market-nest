@@ -32,6 +32,9 @@ export class Broker {
       const active = actives[i];
       if (active.quantity >= quantity) {
         active.quantity -= quantity;
+        if (active.quantity === 0) {
+          actives.splice(i, 1);
+        }
         break;
       }
       quantity -= active.quantity;

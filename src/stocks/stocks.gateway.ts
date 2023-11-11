@@ -129,8 +129,9 @@ export class StocksGateway implements OnGatewayConnection, OnGatewayDisconnect {
   buy(
     @MessageBody('id') id: number,
     @MessageBody('quantity') quantity: number,
+    @MessageBody('brokerMoney') brokerMoney: number,
   ) {
-    const res = this.stocksService.buy(id, quantity);
+    const res = this.stocksService.buy(id, quantity, brokerMoney);
     if (res === null) {
       return null;
     }

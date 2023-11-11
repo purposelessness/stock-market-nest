@@ -127,7 +127,7 @@ export class StocksService implements OnModuleInit {
     return of(id);
   }
 
-  buy(id: number, quantity: number) {
+  buy(id: number, quantity: number, brokerMoney: number) {
     if (this.stocks.has(id)) {
       const stock = this.stocks.get(id);
       if (!stock.enabled) {
@@ -140,6 +140,11 @@ export class StocksService implements OnModuleInit {
         );
         return null;
       }
+      if (brokerMoney < quantity * stock.getImprint(this.date).price) {
+        this.logger.warn(`Not enough money to buy ${quantity} stocks.`);
+        return null;
+      }
+
       stock.quantity -= quantity;
       if (stock.quantity < 0) {
         quantity += stock.quantity;

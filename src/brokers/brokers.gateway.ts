@@ -79,6 +79,7 @@ export class BrokersGateway {
       {
         id: stockId,
         quantity: quantity,
+        brokerMoney: broker.money,
       },
       (response: any | null) => {
         if (response === null) {
