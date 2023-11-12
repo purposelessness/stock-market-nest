@@ -60,6 +60,24 @@ export class ControllerGateway
     });
   }
 
+  @SubscribeMessage('setClockDelay')
+  setClockDelay(@MessageBody() delay: number): void {
+    this.logger.debug(`Clock delay set: ${delay}`);
+    this.controllerService.setClockSpeed(delay);
+  }
+
+  @SubscribeMessage('startClock')
+  startClockMessage(): void {
+    this.logger.debug(`Clock started`);
+    this.controllerService.startClock();
+  }
+
+  @SubscribeMessage('stopClock')
+  stopClockMessage(): void {
+    this.logger.debug(`Clock stopped`);
+    this.controllerService.stopClock();
+  }
+
   @Get('date')
   getDate(): Date {
     return this.controllerService.date;
