@@ -17,7 +17,11 @@ export class BrokersService implements OnModuleInit {
 
   create(createBrokerDto: CreateBrokerDto) {
     const id = this.brokers.size;
-    const broker = new Broker(id, createBrokerDto.login, 0);
+    const broker = new Broker(
+      id,
+      createBrokerDto.login,
+      createBrokerDto.money ?? 0,
+    );
     this.brokers.set(id, broker);
     return broker;
   }
@@ -41,13 +45,17 @@ export class BrokersService implements OnModuleInit {
     });
   }
 
-  update(id: number, updateBrokerDto: UpdateBrokerDto) {
-    if (!this.brokers.has(id)) {
-      return;
+  update(updateBrokerDto: UpdateBrokerDto) {
+    const broker = updateBrokerDto.id
+      ? this.findOne(updateBrokerDto.id)
+      : this.findByLogin(updateBrokerDto.login);
+    if (!broker) {
+      return this.create(updateBrokerDto);
+    } else {
+      Object.assign(broker, updateBrokerDto);
+      console.log(broker);
+      return broker;
     }
-    const broker = this.brokers.get(id);
-    Object.assign(broker, updateBrokerDto);
-    return broker;
   }
 
   remove(id: number) {

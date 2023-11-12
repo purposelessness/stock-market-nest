@@ -57,7 +57,7 @@ export class BrokersGateway {
 
   @SubscribeMessage('update')
   update(@MessageBody() updateBrokerDto: UpdateBrokerDto) {
-    const res = this.brokersService.update(updateBrokerDto.id, updateBrokerDto);
+    const res = this.brokersService.update(updateBrokerDto);
     return this.send('updated', res.toJson());
   }
 

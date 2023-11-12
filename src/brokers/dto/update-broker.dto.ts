@@ -1,8 +1,6 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateBrokerDto } from './create-broker.dto';
-
-export class UpdateBrokerDto extends PartialType(CreateBrokerDto) {
-  id: number;
+export class UpdateBrokerDto {
+  id?: number;
+  login: string;
   money: number;
-  actives: number[];
+  actives?: number[];
 }
